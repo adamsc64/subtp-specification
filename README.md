@@ -1,6 +1,6 @@
-# subtp-specification
+# SubTP
 
-## SubTP: Subscription Transfer Protocol project
+## The Subscription Transfer Protocol (SubTP) project
 Websockets and COMET-style open HTTP connections provide the new transport layer for the real-time web. There does not yet exist a standard application layer for realtime socket connections, such as HTTP provides over TCP. This project attempts to define a basic application layer, as well as offer several examples, that can be used to implement various real-time projects.
 
 ### What it specifies
@@ -15,10 +15,10 @@ Websockets and COMET-style open HTTP connections provide the new transport layer
 * You want to use the easy-to-use Javascript API that socket.io provides.
 
 ### What's It Look Like?
-
 A basic example looks like:
 
 #### A client first defines a contract
+The contract specifies the kind of data expected back by a contract identified by a given `name`.
 ```js
 {
     "create": {
@@ -33,7 +33,8 @@ A basic example looks like:
 }
 ```
 
-#### Remote host honors the contract.
+#### Remote host honors the contract
+As the dataset itself changes, results are broadcast back to the listening client. Only those results that fulfil the conditions of the contract are those that are sent.
 ```js
 {
     "create": {
