@@ -41,42 +41,47 @@ As the dataset itself changes, results are broadcast back to the listening clien
 
 To see the results from the remote host, we can log the results to the in-browser console:
 ```js
-
-function printout(element) {
+function created(element) {
+    console.log("Created:");
+    console.log(element);
+}
+function updated(element) {
+    console.log("Updated:");
+    console.log(element);
+}
+function deleted(element) {
+    console.log("Deleted:");
     console.log(element);
 }
 
-elements.on("create", printout);
-elements.on("update", printout);
-elements.on("delete", printout);
+elements.on("create", created);
+elements.on("update", updated);
+elements.on("delete", deleted);
 ```
 
 When events are received, for example a create, update, and delete event for an item with {"foo": "bar"}, the console logger will display them like this:
 ```js
+Created:
 {
-    "create": {
-        "id": 67990,
-        "data" : {
-            "new": "element",
-            "here": "with",
-            "foo": "bar",
-            "and": "having",
-            "_id": 67990
-        }
+    "id": 67990,
+    "data" : {
+        "new": "element",
+        "here": "with",
+        "foo": "bar",
+        "and": "having",
+        "_id": 67990
     }
 }
+Updated:
 {
-    "update": {
-        "id": 67990,
-        "data" : {
-            "new": "change"
-        }
+    "id": 67990,
+    "data" : {
+        "new": "change"
     }
 }
+Deleted:
 {
-    "delete": {
-        "id": 67990
-    }
+    "id": 67990
 }
 ... continuing to send over time
 ```
@@ -85,24 +90,25 @@ When events are received, for example a create, update, and delete event for an 
 Even while receiving events about a particular dataset, the client can also push CRUD operations back up to the server, perhaps in response to its own application logic or user interaction.
 
 ```js
-var myelement = {
-    "id": 67990,
-    "data": {
-        "new": "changed again"
-    }
-};
-elements.emit("update", element);
+if (application_logic_condition === true) {
+    var myelement = {
+        "id": 67990,
+        "data": {
+            "new": "changed again"
+        }
+    };
+    elements.emit("update", element);
+}
 ```
 
 The client should immediately receive the update back because it is still subscribing to events for the kinds of objects that have {"foo": "bar"}:
 
 ```js
+Updated:
 {
-    "update": {
-        "id": 67990,
-        "data" : {
-            "new": "changed again"
-        }
+    "id": 67990,
+    "data" : {
+        "new": "changed again"
     }
 }
 ```
