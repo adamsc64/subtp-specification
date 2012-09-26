@@ -3,7 +3,7 @@
 ## The Subscription Transfer Protocol (SubTP) project
 Websockets and COMET-style open HTTP connections provide the new transport layer for the real-time web. There does not yet exist a standard application layer for realtime socket connections, such as HTTP provides over TCP.
 
-Taking the [socket.io](http://socket.io) project, with its implementation of heartbeats, timeouts, and reconnection support, to be one of the most mature means of transporting data between server and client in real time, this project attempts to define a basic application layer on top of socket.io, built around the paradigm of subscribing to collections of resources. This repo also offers several examples that can be used to implement various real-time projects.
+Taking the [socket.io](http://socket.io) project, with its implementation of heartbeats, timeouts, and reconnection support, to be one of the most mature means of transporting data between server and client in real time, this project attempts to define a basic application layer on top of socket.io, built around the paradigm of subscribing to collections of resources. This repo will also offer several examples that can be used to implement various real-time projects.
 
 ### What it specifies
 * SubTP allows clients to subscribe to namespaces customized for your application representing `resources`.
@@ -38,10 +38,12 @@ elements.emit("register", subscription);
 
 #### Remote host honors the subscription
 As the dataset itself changes, results are broadcast back to the listening client. Only those results that fulfill the conditions of the subscription are those that are sent. In this case, it is only those objects who have a "bar" value set for the "foo" key.
+
+To see the results from the remote host, we can log the results to the in-browser console:
 ```js
 
 function printout(element) {
-    console.log(JSON.stringify(element));
+    console.log(element);
 }
 
 elements.on("create", printout);
@@ -49,7 +51,7 @@ elements.on("update", printout);
 elements.on("delete", printout);
 ```
 
-When events are received, the console logger will display them like this:
+When events are received, for example a create, update, and delete event for an item with {"foo": "bar"}, the console logger will display them like this:
 ```js
 {
     "create": {
@@ -76,20 +78,20 @@ When events are received, the console logger will display them like this:
         "id": 67990
     }
 }
-```
 ... continuing to send over time
+```
 
 #### Client pushes data back to the server
 Even while receiving events about a particular dataset, the client can also push CRUD operations back up to the server, perhaps in response to its own application logic or user interaction.
 
 ```js
-var update = {
+var myelement = {
     "id": 67990,
     "data": {
         "new": "changed again"
     }
 };
-elements.emit("update", update);
+elements.emit("update", element);
 ```
 
 The client should immediately receive the update back because it is still subscribing to events for the kinds of objects that have {"foo": "bar"}:
@@ -99,7 +101,7 @@ The client should immediately receive the update back because it is still subscr
     "update": {
         "id": 67990,
         "data" : {
-            "new": "change"
+            "new": "changed again"
         }
     }
 }
