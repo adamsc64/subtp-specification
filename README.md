@@ -9,12 +9,13 @@ Taking the [socket.io](http://socket.io) project, with its implementation of hea
 * SubTP allows clients to subscribe to namespaces customized for your application representing `resources`.
 * Client and server emit events to eachother over socket.io's event API.
 * Besides the canonical events that socket.io provides out of the box (`connect`, `message`, and `disconnect`), SubTP defines four custom events using the names of the basic functions of persistent storage: `create`, `read`, `update` and `delete` (CRUD).
-* The client begins a session by registering a `subscription`.
-* The server responds by continually streaming results honoring the subscription.
-* Once the connection is established, the protocol is bidirectional. The client can push events to the server or the server can push events to the client.
+* The client begins a session by emitting a `register` event with the details of its subscription.
+* The server responds by continually streaming results according to the criteria of the subscription.
+* The protocol is bidirectional. The client can push events to the server or the server can push events to the client.
 
 ### Why would I use it?
 * You have a collection of serverside resources and you want your application to subscribe to changes in real-time on the clientside.
+* You want to make data updates between the client-side and server-side seamless and in real-time.
 * You want to use the easy-to-use Javascript API that socket.io provides.
 
 ### What's It Look Like?
@@ -23,37 +24,32 @@ A basic example looks like:
 #### A client first registers a subscription
 The subscription specifies the kind of data expected back and is identified by a given `name`.
 ```js
-{
-    "create": {
-        "subscription": {
-            "name": "MyContract",
-            "from": "2012-07-05T12:53:12Z",
-            "filter": {
-                "foo": "bar"
-            }
-        }
-    }
-}
-```
-
-In code:
-```js
 var elements = io.connect("/elements");
 
 var subscription = {
-    "subscription": {
-        "name": "MyContract",
-        "from": "2012-07-05T12:53:12Z",
-        "filter": {
-            "foo": "bar"
-        }
+    "name": "MyContract",
+    "from": "2012-07-05T12:53:12Z",
+    "filter": {
+        "foo": "bar"
     }
 };
-elements.emit("create", subscription);
+elements.emit("register", subscription);
 ```
 
 #### Remote host honors the subscription
-As the dataset itself changes, results are broadcast back to the listening client. Only those results that fulfill the conditions of the subscription are those that are sent.
+As the dataset itself changes, results are broadcast back to the listening client. Only those results that fulfill the conditions of the subscription are those that are sent. In this case, it is only those objects who have a "bar" value set for the "foo" key.
+```js
+
+function printout(element) {
+    console.log(JSON.stringify(element));
+}
+
+elements.on("create", printout);
+elements.on("update", printout);
+elements.on("delete", printout);
+```
+
+When events are received, the console logger will display them like this:
 ```js
 {
     "create": {
@@ -90,8 +86,22 @@ Even while receiving events about a particular dataset, the client can also push
 var update = {
     "id": 67990,
     "data": {
-        "new": "change"
+        "new": "changed again"
     }
 };
 elements.emit("update", update);
 ```
+
+The client should immediately receive the update back because it is still subscribing to events for the kinds of objects that have {"foo": "bar"}:
+
+```js
+{
+    "update": {
+        "id": 67990,
+        "data" : {
+            "new": "change"
+        }
+    }
+}
+```
+
